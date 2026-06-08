@@ -49,8 +49,10 @@ namespace d2d
 		void RecreateAfterDeviceLost();	// 디바이스 재생성 후 스왑체인/타겟 다시 만들기
 
 		ID2D1DeviceContext* GetDC()     const { return m_pDC.Get(); }
-		UINT  GetWidth()  const { return m_uWidth; }
-		UINT  GetHeight() const { return m_uHeight; }
+		UINT  GetWidth()  const { return m_uWidth; }		// 픽셀
+		UINT  GetHeight() const { return m_uHeight; }		// 픽셀
+		// D2D 그리기 영역(DIP). 고DPI 에서 픽셀과 다르므로 렌더 좌표는 이걸 사용.
+		D2D1_SIZE_F GetSizeDips() const { return (m_pDC != nullptr) ? m_pDC->GetSize() : D2D1::SizeF(0.0f, 0.0f); }
 		HWND  GetHWND()   const { return m_hWnd; }
 	};
 }
