@@ -247,6 +247,7 @@
     <ClInclude Include="D2DBrushCache.h" />
     <ClInclude Include="D2DText.h" />
     <ClInclude Include="D2DDrawContext.h" />
+    <ClInclude Include="D2DGuiContext.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
@@ -257,6 +258,9 @@
     <ClCompile Include="D2DBrushCache.cpp" />
     <ClCompile Include="D2DText.cpp" />
     <ClCompile Include="D2DDrawContext.cpp" />
+    <ClCompile Include="D2DGuiContext.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseMD|x64'">Create</PrecompiledHeader>
