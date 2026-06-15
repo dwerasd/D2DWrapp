@@ -18,6 +18,7 @@ namespace d2d
 	{
 		for (int i = 0; i < 3; ++i) { m_bDown[i] = false; m_bPrevDown[i] = false; }
 		for (int i = 0; i < 256; ++i) { m_bKey[i] = false; }
+		m_fWheel = 0.0f;
 	}
 
 	void C_DRAW_CONTEXT_D2D::Bind(C_D2D_DEVICE* _pDevice, C_D2D_SWAP_TARGET* _pTarget,
@@ -53,6 +54,7 @@ namespace d2d
 		for (int i = 0; i < 3; ++i) { m_bPrevDown[i] = m_bDown[i]; }
 		for (int i = 0; i < 256; ++i) { m_bKey[i] = false; }
 		m_sTextInput.clear();
+		m_fWheel = 0.0f;
 	}
 
 	//------------------------------------------------------------------------------------------------

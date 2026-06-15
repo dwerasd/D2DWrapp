@@ -44,6 +44,7 @@ namespace d2d
 		bool m_bPrevDown[3];	// 직전 프레임 down (clicked/released 산출)
 		bool m_bKey[256];		// 이번 프레임 VK down
 		std::wstring m_sTextInput;	// 이번 프레임 텍스트 입력(IME 포함)
+		float m_fWheel;			// 이번 프레임 휠 누적(노치)
 
 		ID2D1SolidColorBrush* brush_(uint32_t _argb);
 		IDWriteTextFormat*    fmt_(dxgui::FontHandle _h, float _fScale);
@@ -61,6 +62,7 @@ namespace d2d
 		void SetMouseButton(dxgui::E_DXG_MOUSE_BUTTON _btn, bool _bDown);
 		void SetKey(int _nVK, bool _bDown);
 		void PushTextInput(const wchar_t* _pText);	// WM_CHAR/IME 결과 누적
+		void AddWheel(float _fNotches) { m_fWheel += _fNotches; }	// WM_MOUSEWHEEL(+위/-아래)
 		// 프레임 경계 — 매니저 Render 직후 호출: prevDown=down, 키/텍스트 큐 클리어.
 		void NewFrame();
 
@@ -95,5 +97,6 @@ namespace d2d
 		{
 			return m_sTextInput.empty() ? nullptr : m_sTextInput.c_str();
 		}
+		float GetWheelDelta() const override { return m_fWheel; }
 	};
 }
