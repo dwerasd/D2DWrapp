@@ -57,6 +57,9 @@ namespace d2d
 		void Bind(C_D2D_DEVICE* _pDevice, C_D2D_SWAP_TARGET* _pTarget,
 			C_D2D_BRUSH_CACHE* _pBrush, C_D2D_TEXT* _pText);
 
+		// 타겟 클리어(프레임 시작). IDrawContext 위젯 프리미티브 아님 — 호스트 프레임 op.
+		void Clear(uint32_t _argb);
+
 		// ── 입력 주입(호스트) ──
 		void SetMousePos(float _x, float _y) { m_Mouse.x = _x; m_Mouse.y = _y; }
 		void SetMouseButton(dxgui::E_DXG_MOUSE_BUTTON _btn, bool _bDown);
