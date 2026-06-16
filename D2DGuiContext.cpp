@@ -17,9 +17,13 @@ namespace d2d
 		, m_pText(nullptr)
 	{
 		for (int i = 0; i < 3; ++i) { m_bDown[i] = false; m_bPrevDown[i] = false; }
-		for (int i = 0; i < 256; ++i) { m_bKey[i] = false; }
+		for (int i = 0; i < 256; ++i) { m_bKey[i] = false; m_bKeyHeld[i] = false; }
 		m_fWheel = 0.0f;
 		m_bCapture = false;
+		m_nFrame = 0;
+		m_nLastLDownFrame = -1000;
+		m_LastLDownPos = dxgui::_DXG_POINT(0.0f, 0.0f);
+		m_bDblClick = false;
 	}
 
 	void C_DRAW_CONTEXT_D2D::Bind(C_D2D_DEVICE* _pDevice, C_D2D_SWAP_TARGET* _pTarget,
@@ -42,12 +46,61 @@ namespace d2d
 	void C_DRAW_CONTEXT_D2D::SetMouseButton(dxgui::E_DXG_MOUSE_BUTTON _btn, bool _bDown)
 	{
 		const int i = static_cast<int>(_btn);
-		if (i >= 0 && i < 3) { m_bDown[i] = _bDown; }
+		if (i < 0 || i >= 3) { return; }
+		// 좌클릭 down — 더블클릭 판정(직전 down 과 시간/거리 근접).
+		if (i == 0 && _bDown)
+		{
+			const float dx = m_Mouse.x - m_LastLDownPos.x;
+			const float dy = m_Mouse.y - m_LastLDownPos.y;
+			m_bDblClick = (m_nFrame - m_nLastLDownFrame <= 30) && (dx * dx + dy * dy < 36.0f);
+			m_nLastLDownFrame = m_nFrame;
+			m_LastLDownPos = m_Mouse;
+		}
+		m_bDown[i] = _bDown;
 	}
 
 	void C_DRAW_CONTEXT_D2D::SetKey(int _nVK, bool _bDown)
 	{
-		if (_nVK >= 0 && _nVK < 256) { m_bKey[_nVK] = _bDown; }
+		if (_nVK >= 0 && _nVK < 256)
+		{
+			if (_bDown) { m_bKey[_nVK] = true; }	// 에지(NewFrame 클리어)
+			m_bKeyHeld[_nVK] = _bDown;				// 레벨(KEYUP 까지 유지)
+		}
+	}
+
+	// 클립보드 — CF_UNICODETEXT. 호스트 OS 서비스(렌더와 무관). 윈도우 핸들 불필요(NULL 소유).
+	void C_DRAW_CONTEXT_D2D::SetClipboardText(const wchar_t* _pText)
+	{
+		if (_pText == nullptr || !::OpenClipboard(nullptr)) { return; }
+		::EmptyClipboard();
+		const size_t nLen = ::wcslen(_pText);
+		const HGLOBAL hMem = ::GlobalAlloc(GMEM_MOVEABLE, (nLen + 1) * sizeof(wchar_t));
+		if (hMem != nullptr)
+		{
+			void* p = ::GlobalLock(hMem);
+			if (p != nullptr)
+			{
+				::memcpy(p, _pText, (nLen + 1) * sizeof(wchar_t));
+				::GlobalUnlock(hMem);
+				::SetClipboardData(CF_UNICODETEXT, hMem);	// 성공 시 소유권 OS 이전
+			}
+			else { ::GlobalFree(hMem); }
+		}
+		::CloseClipboard();
+	}
+
+	const wchar_t* C_DRAW_CONTEXT_D2D::GetClipboardText()
+	{
+		m_sClipboard.clear();
+		if (!::IsClipboardFormatAvailable(CF_UNICODETEXT) || !::OpenClipboard(nullptr)) { return nullptr; }
+		const HANDLE hData = ::GetClipboardData(CF_UNICODETEXT);
+		if (hData != nullptr)
+		{
+			const wchar_t* p = static_cast<const wchar_t*>(::GlobalLock(hData));
+			if (p != nullptr) { m_sClipboard = p; ::GlobalUnlock(hData); }
+		}
+		::CloseClipboard();
+		return m_sClipboard.empty() ? nullptr : m_sClipboard.c_str();
 	}
 
 	void C_DRAW_CONTEXT_D2D::PushTextInput(const wchar_t* _pText)
@@ -61,6 +114,8 @@ namespace d2d
 		for (int i = 0; i < 256; ++i) { m_bKey[i] = false; }
 		m_sTextInput.clear();
 		m_fWheel = 0.0f;
+		++m_nFrame;
+		m_bDblClick = false;
 	}
 
 	//------------------------------------------------------------------------------------------------

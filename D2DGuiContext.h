@@ -42,11 +42,17 @@ namespace d2d
 		dxgui::_DXG_POINT m_Mouse;
 		bool m_bDown[3];		// 이번 프레임 버튼 down
 		bool m_bPrevDown[3];	// 직전 프레임 down (clicked/released 산출)
-		bool m_bKey[256];		// 이번 프레임 VK down
+		bool m_bKey[256];		// 이번 프레임 VK down(에지 — NewFrame 클리어)
+		bool m_bKeyHeld[256];	// VK 눌림 레벨(KEYUP 까지 유지 — Ctrl/Shift 모디파이어용)
+		std::wstring m_sClipboard;	// GetClipboardText 반환 캐시
 		std::wstring m_sTextInput;	// 이번 프레임 텍스트 입력(IME 결과 포함)
 		float m_fWheel;			// 이번 프레임 휠 누적(노치)
 		std::wstring m_sComposition;	// IME 조합중(미확정) — 호스트가 매 프레임 설정
 		bool m_bCapture;		// 모달 입력 캡처(켜진 동안 마우스/휠 조회 차단)
+		int  m_nFrame;			// 프레임 카운터(더블클릭 시간판정)
+		int  m_nLastLDownFrame;	// 직전 좌클릭 down 프레임
+		dxgui::_DXG_POINT m_LastLDownPos;
+		bool m_bDblClick;		// 이번 프레임 더블클릭(좌)
 
 		ID2D1SolidColorBrush* brush_(uint32_t _argb);
 		IDWriteTextFormat*    fmt_(dxgui::FontHandle _h, float _fScale);
@@ -101,9 +107,19 @@ namespace d2d
 			return !m_bCapture && _rect.Contains(m_Mouse.x, m_Mouse.y);
 		}
 		bool IsMouseClicked(dxgui::E_DXG_MOUSE_BUTTON _btn) const override;
+		bool IsMouseDoubleClicked(dxgui::E_DXG_MOUSE_BUTTON _btn) const override
+		{
+			return !m_bCapture && (_btn == dxgui::DXG_MOUSE_LEFT) && m_bDblClick;
+		}
 		bool IsMouseDown(dxgui::E_DXG_MOUSE_BUTTON _btn) const override;
 		bool IsMouseReleased(dxgui::E_DXG_MOUSE_BUTTON _btn) const override;
 		bool IsKeyPressed(int _nVK) const override;
+		bool IsKeyDown(int _nVK) const override
+		{
+			return (_nVK >= 0 && _nVK < 256) && m_bKeyHeld[_nVK];
+		}
+		void SetClipboardText(const wchar_t* _pText) override;
+		const wchar_t* GetClipboardText() override;
 		const wchar_t* PollTextInput() const override
 		{
 			return m_sTextInput.empty() ? nullptr : m_sTextInput.c_str();
