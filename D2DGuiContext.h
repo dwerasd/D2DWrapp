@@ -46,6 +46,7 @@ namespace d2d
 		std::wstring m_sTextInput;	// 이번 프레임 텍스트 입력(IME 결과 포함)
 		float m_fWheel;			// 이번 프레임 휠 누적(노치)
 		std::wstring m_sComposition;	// IME 조합중(미확정) — 호스트가 매 프레임 설정
+		bool m_bCapture;		// 모달 입력 캡처(켜진 동안 마우스/휠 조회 차단)
 
 		ID2D1SolidColorBrush* brush_(uint32_t _argb);
 		IDWriteTextFormat*    fmt_(dxgui::FontHandle _h, float _fScale);
@@ -92,8 +93,13 @@ namespace d2d
 		void FillCircle(dxgui::_DXG_POINT _c, float _fRadius, dxgui::_DXG_COLOR _color) override;
 		void DrawCircle(dxgui::_DXG_POINT _c, float _fRadius, dxgui::_DXG_COLOR _color, float _fThickness) override;
 
+		void SetInputCapture(bool _bCapture) override { m_bCapture = _bCapture; }
+
 		dxgui::_DXG_POINT GetMousePos() const override { return m_Mouse; }
-		bool IsMouseHovered(dxgui::_DXG_RECT _rect) const override { return _rect.Contains(m_Mouse.x, m_Mouse.y); }
+		bool IsMouseHovered(dxgui::_DXG_RECT _rect) const override
+		{
+			return !m_bCapture && _rect.Contains(m_Mouse.x, m_Mouse.y);
+		}
 		bool IsMouseClicked(dxgui::E_DXG_MOUSE_BUTTON _btn) const override;
 		bool IsMouseDown(dxgui::E_DXG_MOUSE_BUTTON _btn) const override;
 		bool IsMouseReleased(dxgui::E_DXG_MOUSE_BUTTON _btn) const override;
@@ -102,7 +108,7 @@ namespace d2d
 		{
 			return m_sTextInput.empty() ? nullptr : m_sTextInput.c_str();
 		}
-		float GetWheelDelta() const override { return m_fWheel; }
+		float GetWheelDelta() const override { return m_bCapture ? 0.0f : m_fWheel; }
 		const wchar_t* PollComposition() const override
 		{
 			return m_sComposition.empty() ? nullptr : m_sComposition.c_str();
