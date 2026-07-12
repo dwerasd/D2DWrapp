@@ -24,7 +24,7 @@ namespace d2d
 	class C_DRAW_CONTEXT_D2D : public dxgui::IDrawContext
 	{
 	private:
-		// 등록 폰트 — FontHandle = 인덱스. DrawText/Measure 시 scale 곱해 DWrite 크기 산출.
+		// 등록 폰트 - FontHandle = 인덱스. DrawText/Measure 시 scale 곱해 DWrite 크기 산출.
 		struct _FONT_ENT
 		{
 			std::wstring       sFace;
@@ -38,16 +38,16 @@ namespace d2d
 		C_D2D_BRUSH_CACHE*  m_pBrush;
 		C_D2D_TEXT*         m_pText;
 
-		// ── 입력 상태(폴링) — 호스트 WndProc 가 갱신 ──
+		// ── 입력 상태(폴링) - 호스트 WndProc 가 갱신 ──
 		dxgui::_DXG_POINT m_Mouse;
 		bool m_bDown[3];		// 이번 프레임 버튼 down
 		bool m_bPrevDown[3];	// 직전 프레임 down (clicked/released 산출)
-		bool m_bKey[256];		// 이번 프레임 VK down(에지 — NewFrame 클리어)
-		bool m_bKeyHeld[256];	// VK 눌림 레벨(KEYUP 까지 유지 — Ctrl/Shift 모디파이어용)
+		bool m_bKey[256];		// 이번 프레임 VK down(에지 - NewFrame 클리어)
+		bool m_bKeyHeld[256];	// VK 눌림 레벨(KEYUP 까지 유지 - Ctrl/Shift 모디파이어용)
 		std::wstring m_sClipboard;	// GetClipboardText 반환 캐시
 		std::wstring m_sTextInput;	// 이번 프레임 텍스트 입력(IME 결과 포함)
 		float m_fWheel;			// 이번 프레임 휠 누적(노치)
-		std::wstring m_sComposition;	// IME 조합중(미확정) — 호스트가 매 프레임 설정
+		std::wstring m_sComposition;	// IME 조합중(미확정) - 호스트가 매 프레임 설정
 		bool m_bCapture;		// 모달 입력 캡처(켜진 동안 마우스/휠 조회 차단)
 		int  m_nFrame;			// 프레임 카운터(더블클릭 시간판정)
 		int  m_nLastLDownFrame;	// 직전 좌클릭 down 프레임
@@ -65,7 +65,7 @@ namespace d2d
 		void Bind(C_D2D_DEVICE* _pDevice, C_D2D_SWAP_TARGET* _pTarget,
 			C_D2D_BRUSH_CACHE* _pBrush, C_D2D_TEXT* _pText);
 
-		// 타겟 클리어(프레임 시작). IDrawContext 위젯 프리미티브 아님 — 호스트 프레임 op.
+		// 타겟 클리어(프레임 시작). IDrawContext 위젯 프리미티브 아님 - 호스트 프레임 op.
 		void Clear(uint32_t _argb);
 
 		// ── 입력 주입(호스트) ──
@@ -75,7 +75,7 @@ namespace d2d
 		void PushTextInput(const wchar_t* _pText);	// WM_CHAR/IME 결과 누적
 		void AddWheel(float _fNotches) { m_fWheel += _fNotches; }	// WM_MOUSEWHEEL(+위/-아래)
 		void SetComposition(const wchar_t* _p) { m_sComposition = (_p != nullptr) ? _p : L""; }	// IME 조합중
-		// 프레임 경계 — 매니저 Render 직후 호출: prevDown=down, 키/텍스트 큐 클리어.
+		// 프레임 경계 - 매니저 Render 직후 호출: prevDown=down, 키/텍스트 큐 클리어.
 		void NewFrame();
 
 		// ── dxgui::IDrawContext ──
@@ -91,6 +91,8 @@ namespace d2d
 		void FillRect(dxgui::_DXG_RECT _rect, dxgui::_DXG_COLOR _color) override;
 		void DrawRectOutline(dxgui::_DXG_RECT _rect, dxgui::_DXG_COLOR _color, float _fThickness) override;
 		void DrawLine(dxgui::_DXG_POINT _a, dxgui::_DXG_POINT _b, dxgui::_DXG_COLOR _color, float _fThickness) override;
+		void FillRoundRect(dxgui::_DXG_RECT _rect, float _fRadius, dxgui::_DXG_COLOR _color) override;
+		void DrawRoundRectOutline(dxgui::_DXG_RECT _rect, float _fRadius, dxgui::_DXG_COLOR _color, float _fThickness) override;
 		void PushClipRect(dxgui::_DXG_RECT _rect) override;
 		void PopClipRect() override;
 

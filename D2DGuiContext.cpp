@@ -47,7 +47,7 @@ namespace d2d
 	{
 		const int i = static_cast<int>(_btn);
 		if (i < 0 || i >= 3) { return; }
-		// 좌클릭 down — 더블클릭 판정(직전 down 과 시간/거리 근접).
+		// 좌클릭 down - 더블클릭 판정(직전 down 과 시간/거리 근접).
 		if (i == 0 && _bDown)
 		{
 			const float dx = m_Mouse.x - m_LastLDownPos.x;
@@ -68,7 +68,7 @@ namespace d2d
 		}
 	}
 
-	// 클립보드 — CF_UNICODETEXT. 호스트 OS 서비스(렌더와 무관). 윈도우 핸들 불필요(NULL 소유).
+	// 클립보드 - CF_UNICODETEXT. 호스트 OS 서비스(렌더와 무관). 윈도우 핸들 불필요(NULL 소유).
 	void C_DRAW_CONTEXT_D2D::SetClipboardText(const wchar_t* _pText)
 	{
 		if (_pText == nullptr || !::OpenClipboard(nullptr)) { return; }
@@ -185,7 +185,7 @@ namespace d2d
 	{
 		IDWriteTextFormat* pFmt = fmt_(_hFont, _fScale);
 		if (pFmt == nullptr) { return 0.0f; }
-		// 한 줄 높이 — 대표 글리프 측정(상/하 디센더 포함).
+		// 한 줄 높이 - 대표 글리프 측정(상/하 디센더 포함).
 		const D2D1_SIZE_F sz = m_pText->Measure(L"Ag", pFmt);
 		return sz.height;
 	}
@@ -196,7 +196,7 @@ namespace d2d
 		ID2D1SolidColorBrush* pB = brush_(_color.argb);
 		IDWriteTextFormat* pFmt = fmt_(_hFont, _fScale);
 		if (m_pDC == nullptr || pB == nullptr || pFmt == nullptr || _pText == nullptr) { return; }
-		// 좌상단(_pos) 기준 — 넉넉한 레이아웃 박스, 정렬은 포맷 기본(leading/near).
+		// 좌상단(_pos) 기준 - 넉넉한 레이아웃 박스, 정렬은 포맷 기본(leading/near).
 		const D2D1_RECT_F rc = D2D1::RectF(_pos.x, _pos.y, _pos.x + 100000.0f, _pos.y + 100000.0f);
 		m_pDC->DrawText(_pText, static_cast<UINT32>(::wcslen(_pText)), pFmt, &rc, pB,
 			D2D1_DRAW_TEXT_OPTIONS_NONE, DWRITE_MEASURING_MODE_NATURAL);
@@ -226,6 +226,31 @@ namespace d2d
 		ID2D1SolidColorBrush* pB = brush_(_color.argb);
 		if (m_pDC == nullptr || pB == nullptr) { return; }
 		m_pDC->DrawLine(D2D1::Point2F(_a.x, _a.y), D2D1::Point2F(_b.x, _b.y), pB, _fThickness);
+	}
+
+	// 라운드 사각형 - D2D 네이티브. 반경은 min(w,h)/2 로 클램프(그 값 = pill/캡슐).
+	void C_DRAW_CONTEXT_D2D::FillRoundRect(dxgui::_DXG_RECT _rect, float _fRadius, dxgui::_DXG_COLOR _color)
+	{
+		ID2D1SolidColorBrush* pB = brush_(_color.argb);
+		if (m_pDC == nullptr || pB == nullptr) { return; }
+		const float fMax = 0.5f * ((_rect.w < _rect.h) ? _rect.w : _rect.h);
+		const float fR = (_fRadius > fMax) ? fMax : _fRadius;
+		m_pDC->FillRoundedRectangle(
+			D2D1::RoundedRect(
+				D2D1::RectF(_rect.x, _rect.y, _rect.x + _rect.w, _rect.y + _rect.h), fR, fR), pB);
+	}
+
+	void C_DRAW_CONTEXT_D2D::DrawRoundRectOutline(dxgui::_DXG_RECT _rect, float _fRadius,
+		dxgui::_DXG_COLOR _color, float _fThickness)
+	{
+		ID2D1SolidColorBrush* pB = brush_(_color.argb);
+		if (m_pDC == nullptr || pB == nullptr) { return; }
+		const float fMax = 0.5f * ((_rect.w < _rect.h) ? _rect.w : _rect.h);
+		const float fR = (_fRadius > fMax) ? fMax : _fRadius;
+		m_pDC->DrawRoundedRectangle(
+			D2D1::RoundedRect(
+				D2D1::RectF(_rect.x, _rect.y, _rect.x + _rect.w, _rect.y + _rect.h), fR, fR),
+			pB, _fThickness);
 	}
 
 	void C_DRAW_CONTEXT_D2D::PushClipRect(dxgui::_DXG_RECT _rect)
