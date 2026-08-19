@@ -8,6 +8,8 @@ Windows Direct2D/DirectWrite 렌더링을 위한 정적 래퍼 라이브러리�
 - `d2d::C_D2D_SWAP_TARGET` — HWND용 DXGI 스왑 체인과 Direct2D 타깃
 - `d2d::C_D2D_DRAW_CONTEXT` — 도형·텍스트 그리기 컨텍스트
 - `d2d::C_D2D_BRUSH_CACHE`, `d2d::C_D2D_TEXT` — 브러시와 텍스트 포맷 캐시
+- `d2d::C_D2D_TEXT_LAYOUT` — `IDWriteTextLayout` 소유, 줄 메트릭, 마지막 줄
+  말줄임, UTF-16 양방향 hit-test, 서로게이트 안전 slice와 직접 draw
 - `d2d::C_DRAW_CONTEXT_D2D` — `dxgui::IDrawContext`의 현재 Direct2D 구현
 
 ## 요구 사항과 빌드 전제
@@ -18,6 +20,11 @@ Windows Direct2D/DirectWrite 렌더링을 위한 정적 래퍼 라이브러리�
 - Win32/x64 정적 라이브러리 프로젝트
 
 `D2DGuiContext.h`의 형제 `DXGui` include를 해석할 수 있도록 소비 솔루션이나 속성 시트에서 솔루션 루트 또는 부모 디렉터리를 include 경로로 제공해야 한다. ReleaseMD 구성에는 `$(SolutionDir)`와 `$(ProjectDir)..\`가 설정되어 있다.
+
+`C_D2D_TEXT::CreateLayout`은 DirectWrite의 word-boundary 우선 wrap과 긴 단어
+emergency break를 사용한다. 최대 표시 줄 수를 주면 실제 줄 높이로 레이아웃 높이를
+제한하고 마지막 표시 줄에 ellipsis trimming을 적용한다. 기존 `GetFormat`과
+`Measure` 진입점은 유지되며 `Measure`도 같은 레이아웃 경로를 소비한다.
 
 ## 라이선스
 
